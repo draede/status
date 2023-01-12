@@ -29,7 +29,6 @@
 #pragma once
 
 
-#include <Status/StatusCode.hpp>
 #include <Status/Detail/StatusMessage.hpp>
 #include <cstdint>
 #ifdef STATUS_HAS_FMT
@@ -43,25 +42,26 @@
 namespace Status
 {
 
+template <typename STATUS_CODE, STATUS_CODE STATUS_CODE_OK>
 class [[nodiscard]] Status final
 {
 public:
 
-	Status() : m_data(CodeToData(OK))
+	Status() : m_data(CodeToData(STATUS_CODE_OK))
 	{
 	}
 
-	Status(StatusCode code) : m_data(CodeToData(code))
+	Status(STATUS_CODE code) : m_data(CodeToData(code))
 	{
 	}
 
-	Status(StatusCode code, const char *message) : m_data(MessageToData(code, message))
+	Status(STATUS_CODE code, const char *message) : m_data(MessageToData(code, message))
 	{
 	}
 
 #ifdef STATUS_HAS_FMT
 	template <typename... T>
-	Status(StatusCode code, fmt::format_string<T...> fmt, T &&... args)
+	Status(STATUS_CODE code, fmt::format_string<T...> fmt, T &&... args)
 	{
 		SetMessage(code, fmt, args...);
 	}
@@ -84,7 +84,7 @@ public:
 	Status(Status &&status) noexcept : 
 		m_data(status.m_data)
 	{
-		status.m_data = CodeToData(OK);
+		status.m_data = CodeToData(STATUS_CODE_OK);
 	}
 
 	Status &operator=(const Status &status)
@@ -110,7 +110,7 @@ public:
 		{
 			FreeMem();
 			m_data        = status.m_data;
-			status.m_data = CodeToData(OK);
+			status.m_data = CodeToData(STATUS_CODE_OK);
 		}
 
 		return *this;
@@ -119,15 +119,15 @@ public:
 	~Status()
 	{
 		FreeMem();
-		m_data = CodeToData(OK);
+		m_data = CodeToData(STATUS_CODE_OK);
 	}
 
 	bool IsOk() const
 	{
-		return (OK == GetCode());
+		return (STATUS_CODE_OK == GetCode());
 	}
 
-	StatusCode GetCode() const
+	STATUS_CODE GetCode() const
 	{
 		if (IsCodeOnly(m_data))
 		{
@@ -156,13 +156,13 @@ public:
 		return !IsCodeOnly(m_data);
 	}
 
-	void Set(StatusCode code)
+	void Set(STATUS_CODE code)
 	{
 		FreeMem();
 		m_data = CodeToData(code);
 	}
 
-	void Set(StatusCode code, const char *message)
+	void Set(STATUS_CODE code, const char *message)
 	{
 		FreeMem();
 		m_data = MessageToData(code, message);
@@ -170,7 +170,7 @@ public:
 
 #ifdef STATUS_HAS_FMT
 	template <typename... T>
-	void Set(StatusCode code, fmt::format_string<T...> fmt, T &&... args)
+	void Set(STATUS_CODE code, fmt::format_string<T...> fmt, T &&... args)
 	{
 		FreeMem();
 		SetMessage(code, fmt, args...);
@@ -186,24 +186,24 @@ private:
 		return (data & 1) == 0;
 	}
 
-	static inline uintptr_t CodeToData(StatusCode code)
+	static inline uintptr_t CodeToData(STATUS_CODE code)
 	{
 		return ((uintptr_t)code) << 1;
 	}
 
-	static inline StatusCode DataToCode(uintptr_t data)
+	static inline STATUS_CODE DataToCode(uintptr_t data)
 	{
-		return (StatusCode)(data >> 1);
+		return (STATUS_CODE)(data >> 1);
 	}
 
-	static inline uintptr_t MessageToData(Detail::StatusMessage *status_message)
+	static inline uintptr_t MessageToData(Detail::StatusMessage<STATUS_CODE> *status_message)
 	{
 		return ((uintptr_t)(status_message)) + 1;
 	}
 
-	static inline uintptr_t MessageToData(StatusCode code, const char *message, size_t message_length = (size_t)-1)
+	static inline uintptr_t MessageToData(STATUS_CODE code, const char *message, size_t message_length = (size_t)-1)
 	{
-		auto   *status_message = Detail::StatusMessage::Create(code, message, message_length);
+		auto   *status_message = Detail::StatusMessage<STATUS_CODE>::Create(code, message, message_length);
 
 		if (nullptr == status_message)
 		{
@@ -213,9 +213,9 @@ private:
 		return MessageToData(status_message);
 	}
 
-	static inline Detail::StatusMessage *DataToMessage(uintptr_t data)
+	static inline Detail::StatusMessage<STATUS_CODE> *DataToMessage(uintptr_t data)
 	{
-		return (Detail::StatusMessage *)(data - 1);
+		return (Detail::StatusMessage<STATUS_CODE> *)(data - 1);
 	}
 
 	inline void FreeMem()
@@ -228,10 +228,10 @@ private:
 
 #ifdef STATUS_HAS_FMT
 	template <typename... T>
-	void SetMessage(StatusCode code, fmt::format_string<T...> fmt, T &&... args)
+	void SetMessage(STATUS_CODE code, fmt::format_string<T...> fmt, T &&... args)
 	{
 		size_t   message_length  = fmt::formatted_size(fmt, args...);
-		auto     *status_message = Detail::StatusMessage::AllocMem(message_length);
+		auto     *status_message = Detail::StatusMessage<STATUS_CODE>::AllocMem(message_length);
 
 		if (nullptr == status_message)
 		{
@@ -255,8 +255,8 @@ private:
 
 #ifdef STATUS_HAS_FMT
 
-template <>
-struct fmt::formatter<Status::Status>
+template <typename STATUS_CODE, STATUS_CODE STATUS_CODE_OK>
+struct fmt::formatter<Status::Status<STATUS_CODE, STATUS_CODE_OK>>
 {
 	static constexpr auto parse(const format_parse_context &ctx)
 	{
@@ -264,7 +264,7 @@ struct fmt::formatter<Status::Status>
 	}
 
 	template <typename format_context>
-	auto format(const Status::Status &status, format_context &ctx)
+	auto format(const Status::Status<STATUS_CODE, STATUS_CODE_OK> &status, format_context &ctx)
 	{
 		if (status.IsOk())
 		{

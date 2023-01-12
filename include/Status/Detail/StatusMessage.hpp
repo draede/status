@@ -29,7 +29,6 @@
 #pragma once
 
 
-#include <Status/StatusCode.hpp>
 #include <cstdlib>
 #include <cstring>
 #include <new>
@@ -38,10 +37,11 @@
 namespace Status::Detail
 {
 
+template <typename STATUS_CODE>
 struct StatusMessage final
 {
-	StatusCode   m_code;
-	char         m_message[1];
+	STATUS_CODE   m_code;
+	char          m_message[1];
 
 	static inline StatusMessage *AllocMem(size_t message_length)
 	{
@@ -56,7 +56,7 @@ struct StatusMessage final
 		}
 	}
 
-	static inline StatusMessage *Create(StatusCode code, const char *message, size_t message_length = (size_t)-1)
+	static inline StatusMessage *Create(STATUS_CODE code, const char *message, size_t message_length = (size_t)-1)
 	{
 		if ((size_t)-1 == message_length)
 		{
