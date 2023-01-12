@@ -44,7 +44,7 @@
 #endif //#ifdef STATUS_HAS_FMT
 
 
-namespace Status
+namespace StatusNamespace
 {
 
 template <typename STATUS_CODE, STATUS_CODE STATUS_CODE_OK>
@@ -273,13 +273,13 @@ private:
 
 };
 
-}//namespace Status
+}//namespace StatusNamespace
 
 
 #ifdef STATUS_HAS_FMT
 
 template <typename STATUS_CODE, STATUS_CODE STATUS_CODE_OK>
-struct fmt::formatter<Status::Status<STATUS_CODE, STATUS_CODE_OK>>
+struct fmt::formatter<StatusNamespace::Status<STATUS_CODE, STATUS_CODE_OK>>
 {
 	static constexpr auto parse(const format_parse_context &ctx)
 	{
@@ -287,7 +287,7 @@ struct fmt::formatter<Status::Status<STATUS_CODE, STATUS_CODE_OK>>
 	}
 
 	template <typename format_context>
-	auto format(const Status::Status<STATUS_CODE, STATUS_CODE_OK> &status, format_context &ctx)
+	auto format(const StatusNamespace::Status<STATUS_CODE, STATUS_CODE_OK> &status, format_context &ctx)
 	{
 		if (status.IsOk())
 		{

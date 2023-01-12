@@ -34,7 +34,7 @@
 #include <new>
 
 
-namespace Status::Detail
+namespace StatusNamespace::Detail
 {
 
 template <typename STATUS_CODE>
@@ -80,4 +80,4 @@ struct StatusMessage final
 	}
 };
 
-}//namespace Status::Detail
+}//namespace StatusNamespace::Detail
