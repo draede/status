@@ -29,6 +29,11 @@
 #pragma once
 
 
+#ifndef STATUS_DISABLE_FMT
+	#define STATUS_HAS_FMT
+#endif
+
+
 #include <Status/Detail/StatusMessage.hpp>
 #include <cstdint>
 #ifdef STATUS_HAS_FMT
