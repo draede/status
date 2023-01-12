@@ -47,6 +47,9 @@ class [[nodiscard]] Status final
 {
 public:
 
+	static_assert(sizeof(STATUS_CODE) == sizeof(uint32_t) && std::is_integral<STATUS_CODE>(), 
+	              "STATUS_CODE must be a 32 bit integer");
+
 	Status() : m_data(CodeToData(STATUS_CODE_OK))
 	{
 	}
