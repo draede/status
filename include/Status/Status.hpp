@@ -142,6 +142,21 @@ public:
 		}
 	}
 
+	explicit operator bool() const
+	{
+		return IsOk();
+	}
+
+	explicit operator STATUS_CODE() const
+	{
+		return GetCode();
+	}
+
+	explicit operator const char *() const
+	{
+		return GetMessage();
+	}
+
 	const char *GetMessage() const
 	{
 		if (IsCodeOnly(m_data))
